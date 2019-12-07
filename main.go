@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -22,6 +23,7 @@ func main() {
 	var out string
 	var editor string
 	var isInvokeEditor bool
+	var dest string
 
 	var cmd = &cobra.Command{
 		Use:   "ska [template]",
@@ -64,6 +66,11 @@ func main() {
 
 			vv["template"] = args[0]
 			must(walk(tp, out, vv, gen))
+			if dest == "" {
+				dest = args[0]
+			}
+			vv["template"] = dest
+			must(walk(tp, out, dest, vv, gen))
 		},
 	}
 
@@ -78,6 +85,7 @@ func main() {
 	cmd.PersistentFlags().StringVarP(&out, "output", "o", ".", "output")
 	cmd.PersistentFlags().StringVarP(&editor, "editor", "e", os.Getenv("EDITOR"), "editor")
 	cmd.PersistentFlags().BoolVarP(&isInvokeEditor, "invoke-editor", "", false, "skipping editor to change values. Default is true(not invoke editor)")
+	cmd.PersistentFlags().StringVarP(&dest, "destination", "d", "", "destination folder name")
 
 	must(cmd.Execute())
 }
@@ -101,8 +109,8 @@ func vals(path string) (map[string]interface{}, error) {
 }
 
 // walk walks through in dirs, parses filenames witg vals, generates files with f functions and vals values.
-func walk(in, out string, vals map[string]interface{}, f func(in, out string, vals map[string]interface{}) error) error {
-	return filepath.Walk(in, func(path string, info os.FileInfo, err error) error {
+func walk(in, out, dest string, vals map[string]interface{}, f func(in, out string, vals map[string]interface{}) error) error {
+	return filepath.Walk(in, func(mpath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -111,19 +119,20 @@ func walk(in, out string, vals map[string]interface{}, f func(in, out string, va
 			return nil
 		}
 
-		file, err := prepareFilepath(path, vals)
+		file, err := prepareFilepath(mpath, vals)
 		if err != nil {
 			return err
 
 		}
 
-		saveto := out + string(filepath.Separator) + strings.Replace(file, in, "", -1)
+		// saveto := out + dest + string(filepath.Separator) + strings.Replace(file, in, "", -1)
+		saveto := path.Join(out, dest, strings.Replace(file, in, "", -1))
 
 		if err := mkdirr(filepath.Dir(saveto)); err != nil {
 			return err
 		}
 
-		return f(path, saveto, vals)
+		return f(mpath, saveto, vals)
 	})
 }
 
