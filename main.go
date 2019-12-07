@@ -21,6 +21,7 @@ func main() {
 	var ska string
 	var out string
 	var editor string
+	var isInvokeEditor bool
 
 	var cmd = &cobra.Command{
 		Use:   "ska [template]",
@@ -38,7 +39,9 @@ func main() {
 				s := bufio.NewScanner(os.Stdin)
 
 				for {
-					must(invokeEditor(editor, tmp))
+					if isInvokeEditor {
+						must(invokeEditor(editor, tmp))
+					}
 
 					vv, err = vals(tmp)
 
@@ -73,6 +76,7 @@ func main() {
 	cmd.PersistentFlags().StringVarP(&ska, "templates", "t", skadef, "templates dir")
 	cmd.PersistentFlags().StringVarP(&out, "output", "o", ".", "output")
 	cmd.PersistentFlags().StringVarP(&editor, "editor", "e", os.Getenv("EDITOR"), "editor")
+	cmd.PersistentFlags().BoolVarP(&isInvokeEditor, "invoke-editor", "", false, "skipping editor to change values. Default is true(not invoke editor)")
 
 	must(cmd.Execute())
 }
