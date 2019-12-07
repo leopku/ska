@@ -125,8 +125,6 @@ func walk(in, out, template, dest string, vals map[string]interface{}, f func(in
 
 		prefixStripped := strings.Replace(template, "./", "", -1)
 		saveto := path.Join(out, dest, strings.Replace(file, prefixStripped, "", -1))
-		fmt.Println(template, " | ", file, " | ", in, " | ", prefixStripped)
-		fmt.Println(saveto)
 
 		if err := mkdirr(filepath.Dir(saveto)); err != nil {
 			return err
