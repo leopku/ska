@@ -65,11 +65,10 @@ func main() {
 			}
 
 			vv["template"] = args[0]
-			must(walk(tp, out, vv, gen))
 			if dest == "" {
 				dest = args[0]
 			}
-			vv["template"] = dest
+			vv["dest"] = dest
 			must(walk(tp, out, dest, vv, gen))
 		},
 	}
