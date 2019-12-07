@@ -69,7 +69,7 @@ func main() {
 				dest = args[0]
 			}
 			vv["dest"] = dest
-			must(walk(tp, out, dest, vv, gen))
+			must(walk(tp, out, ska, dest, vv, gen))
 		},
 	}
 
@@ -108,7 +108,7 @@ func vals(path string) (map[string]interface{}, error) {
 }
 
 // walk walks through in dirs, parses filenames witg vals, generates files with f functions and vals values.
-func walk(in, out, dest string, vals map[string]interface{}, f func(in, out string, vals map[string]interface{}) error) error {
+func walk(in, out, template, dest string, vals map[string]interface{}, f func(in, out string, vals map[string]interface{}) error) error {
 	return filepath.Walk(in, func(mpath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -121,11 +121,12 @@ func walk(in, out, dest string, vals map[string]interface{}, f func(in, out stri
 		file, err := prepareFilepath(mpath, vals)
 		if err != nil {
 			return err
-
 		}
 
-		// saveto := out + dest + string(filepath.Separator) + strings.Replace(file, in, "", -1)
-		saveto := path.Join(out, dest, strings.Replace(file, in, "", -1))
+		prefixStripped := strings.Replace(template, "./", "", -1)
+		saveto := path.Join(out, dest, strings.Replace(file, prefixStripped, "", -1))
+		fmt.Println(template, " | ", file, " | ", in, " | ", prefixStripped)
+		fmt.Println(saveto)
 
 		if err := mkdirr(filepath.Dir(saveto)); err != nil {
 			return err
