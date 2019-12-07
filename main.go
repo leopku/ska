@@ -59,6 +59,7 @@ func main() {
 				must(err)
 			}
 
+			vv["template"] = args[0]
 			must(walk(tp, out, vv, gen))
 		},
 	}
