@@ -1,3 +1,4 @@
 Welcome to {{.svc}}
 
 template name - {{.template}}
+dest name - {{.dest}}
