@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -123,8 +122,20 @@ func walk(in, out, template, dest string, vals map[string]interface{}, f func(in
 			return err
 		}
 
-		prefixStripped := strings.Replace(template, "./", "", -1)
-		saveto := path.Join(out, dest, strings.Replace(file, prefixStripped, "", -1))
+		if template == "." || template == "../" {
+			template, _ = filepath.Abs(template)
+		}
+		// prefixStripped := strings.Replace(template, "./", "", 1)
+		// prefixStripped := filepath.Clean(template)
+		// saveto := path.Join(out, dest, strings.Replace(file, prefixStripped, "", 1))
+		if !filepath.IsAbs(file) {
+			file, _ = filepath.Abs(file)
+		}
+		relPath, err := filepath.Rel(template, file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		saveto := filepath.Join(out, dest, strings.Replace(relPath, fmt.Sprintf("%s/templates", vals["template"]), "", -1))
 
 		if err := mkdirr(filepath.Dir(saveto)); err != nil {
 			return err
